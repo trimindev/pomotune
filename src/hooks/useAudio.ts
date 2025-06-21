@@ -1,6 +1,6 @@
 // src/hooks/useAudio.ts
 
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 import { SessionType } from "@/lib/types";
 
 declare global {
@@ -175,8 +175,14 @@ export const useAudio = (
     volumeRef.current = Math.min(1, Math.max(0, newVolume));
   }, []);
 
-  // Check if audio is supported
-  const isSupported = Boolean(window.AudioContext || window.webkitAudioContext);
+  // Check if audio is supported (client-side only)
+  const [isSupported, setIsSupported] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsSupported(Boolean(window.AudioContext || window.webkitAudioContext));
+    }
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
