@@ -137,33 +137,6 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Task Input Section */}
-          <div className="mb-8 text-center">
-            <div className="max-w-md mx-auto">
-              <label
-                htmlFor="task-input"
-                className="block text-sm font-medium text-gray-300 mb-2"
-              >
-                What are you working on? (optional)
-              </label>
-              <input
-                id="task-input"
-                type="text"
-                value={currentTask}
-                onChange={(e) => setCurrentTask(e.target.value)}
-                placeholder="Enter your task..."
-                disabled={isRunning}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                maxLength={100}
-              />
-              {currentTask && (
-                <div className="mt-1 text-xs text-gray-500">
-                  {currentTask.length}/100 characters
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* Timer Display */}
           <div className="mb-8">
             <TimerDisplay
@@ -190,31 +163,6 @@ export default function HomePage() {
               onReset={handleReset}
               onSkip={skipSession}
             />
-          </div>
-
-          {/* Session Info */}
-          <div className="text-center text-sm text-gray-400 space-y-2">
-            <div className="flex items-center justify-center space-x-6">
-              <div>
-                <span className="font-medium">Sessions: </span>
-                <span>{timerData.sessionsCompleted}</span>
-              </div>
-              <div>
-                <span className="font-medium">Cycle: </span>
-                <span>{cycleProgress}</span>
-              </div>
-            </div>
-
-            {timerData.sessionType === "focus" && (
-              <div className="text-xs text-gray-500">
-                {timerData.currentCycle + 1 === settings.sessionsUntilLongBreak
-                  ? "Long break coming up after this session!"
-                  : `${
-                      settings.sessionsUntilLongBreak -
-                      (timerData.currentCycle + 1)
-                    } sessions until long break`}
-              </div>
-            )}
           </div>
         </div>
       </main>

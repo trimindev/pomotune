@@ -122,30 +122,6 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
           <SkipForward className="w-5 h-5" />
         </Button>
       </div>
-
-      {/* Control Labels */}
-      <div className="flex items-center justify-center space-x-8 text-xs text-gray-500">
-        {!isIdle && <span>Stop</span>}
-        <span>Reset</span>
-        <span>Skip</span>
-      </div>
-
-      {/* Keyboard Shortcuts Hint */}
-      <div className="text-center text-xs text-gray-600 mt-4">
-        <p>Keyboard shortcuts:</p>
-        <div className="flex items-center justify-center space-x-4 mt-1">
-          <span>
-            <kbd className="px-2 py-1 bg-gray-800 rounded text-xs">Space</kbd>{" "}
-            Play/Pause
-          </span>
-          <span>
-            <kbd className="px-2 py-1 bg-gray-800 rounded text-xs">R</kbd> Reset
-          </span>
-          <span>
-            <kbd className="px-2 py-1 bg-gray-800 rounded text-xs">S</kbd> Skip
-          </span>
-        </div>
-      </div>
     </div>
   );
 };

@@ -132,20 +132,6 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Session Progress Bar (Alternative/Additional) */}
-      <div className="w-full max-w-md">
-        <div className="flex justify-between text-xs text-gray-500 mb-2">
-          <span>Progress</span>
-          <span>{Math.round(progress)}%</span>
-        </div>
-        <div className="w-full bg-gray-700 rounded-full h-2">
-          <div
-            className={`h-2 rounded-full transition-all duration-1000 ease-linear ${colors.progress}`}
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
     </div>
   );
 };
