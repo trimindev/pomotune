@@ -15,12 +15,10 @@ export default function HomePage() {
   const [settings] = useState(DEFAULT_TIMER_SETTINGS);
 
   // Audio hook for notifications
-  const {
-    playSessionTransition,
-    playStartSound,
-    playPauseSound,
-    isSupported: isAudioSupported,
-  } = useAudio(true, 0.5);
+  const { playSessionTransition, playStartSound, playPauseSound } = useAudio(
+    true,
+    0.5
+  );
 
   // Session completion handler
   const handleSessionComplete = useCallback(
@@ -120,20 +118,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <header className="border-b border-gray-800 py-4">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Pomotune</h1>
-            {!isAudioSupported && (
-              <div className="text-xs text-amber-400">
-                Audio notifications not supported
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
