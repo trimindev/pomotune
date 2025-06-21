@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   keywords: "pomodoro, timer, productivity, focus, ambient music",
   authors: [{ name: "Pomotune" }],
   viewport: "width=device-width, initial-scale=1",
-  themeColor: "#111827",
+  themeColor: "",
 };
 
 export default function RootLayout({
