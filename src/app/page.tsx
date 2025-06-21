@@ -1,62 +1,81 @@
+// src/app/page.tsx
+
 "use client";
 
-import React, { useEffect } from "react";
-import { useTimer } from "@/hooks/useTimer";
+import React, { useState, useCallback, useEffect } from "react";
 import { TimerDisplay } from "@/components/timer/TimerDisplay";
 import { TimerControls } from "@/components/timer/TimerControls";
+import { useTimer } from "@/hooks/useTimer";
+import { useAudio } from "@/hooks/useAudio";
 import { SessionType } from "@/lib/types";
+import { DEFAULT_TIMER_SETTINGS } from "@/lib/constants";
 
-export default function Home() {
+export default function HomePage() {
+  const [currentTask, setCurrentTask] = useState<string>("");
+  const [settings] = useState(DEFAULT_TIMER_SETTINGS);
+
+  // Audio hook for notifications
   const {
-    // Timer state
-    state,
-    sessionType,
-    timeRemaining,
-    currentTask,
-    sessionsCompleted,
-    currentCycle,
+    playSessionTransition,
+    playStartSound,
+    playPauseSound,
+    isSupported: isAudioSupported,
+  } = useAudio(true, 0.5);
+
+  // Session completion handler
+  const handleSessionComplete = useCallback(
+    (completedSessionType: SessionType) => {
+      playSessionTransition(completedSessionType);
+    },
+    [playSessionTransition]
+  );
+
+  // Timer hook
+  const {
+    formattedTime,
+    sessionLabel,
+    cycleProgress,
+    progress,
     isRunning,
     isPaused,
     isIdle,
-    isBreak,
-
-    // Timer actions
+    timerData,
     startTimer,
     pauseTimer,
     resumeTimer,
     stopTimer,
     resetTimer,
     skipSession,
+  } = useTimer(settings, handleSessionComplete);
 
-    // Helper values
-    formatTime,
-    progress,
-    sessionLabel,
-    cycleProgress,
-  } = useTimer({
-    onSessionComplete: (sessionType: SessionType, taskName?: string) => {
-      console.log(
-        `Session completed: ${sessionType}`,
-        taskName ? `Task: ${taskName}` : ""
-      );
-      // Here you could show a notification or play a sound
-    },
-    onTimerTick: (timeRemaining: number) => {
-      // Update document title with remaining time
-      if (typeof document !== "undefined") {
-        document.title = `${Math.floor(timeRemaining / 60)
-          .toString()
-          .padStart(2, "0")}:${(timeRemaining % 60)
-          .toString()
-          .padStart(2, "0")} - Pomotune`;
-      }
-    },
-  });
+  // Handle start with audio feedback
+  const handleStart = useCallback(() => {
+    playStartSound();
+    startTimer(currentTask || undefined);
+  }, [playStartSound, startTimer, currentTask]);
+
+  // Handle pause with audio feedback
+  const handlePause = useCallback(() => {
+    playPauseSound();
+    pauseTimer();
+  }, [playPauseSound, pauseTimer]);
+
+  // Handle resume with audio feedback
+  const handleResume = useCallback(() => {
+    playStartSound();
+    resumeTimer();
+  }, [playStartSound, resumeTimer]);
+
+  // Handle reset
+  const handleReset = useCallback(() => {
+    resetTimer();
+    setCurrentTask("");
+  }, [resetTimer]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      // Prevent shortcuts when typing in input fields
+      // Ignore if user is typing in an input field
       if (
         event.target instanceof HTMLInputElement ||
         event.target instanceof HTMLTextAreaElement
@@ -64,136 +83,156 @@ export default function Home() {
         return;
       }
 
-      switch (event.code) {
-        case "Space":
+      switch (event.key.toLowerCase()) {
+        case " ":
           event.preventDefault();
           if (isIdle) {
-            startTimer();
+            handleStart();
           } else if (isRunning) {
-            pauseTimer();
+            handlePause();
           } else if (isPaused) {
-            resumeTimer();
+            handleResume();
           }
           break;
-        case "KeyR":
+        case "r":
           event.preventDefault();
-          resetTimer();
+          handleReset();
           break;
-        case "KeyS":
+        case "s":
           event.preventDefault();
           skipSession();
-          break;
-        case "Escape":
-          event.preventDefault();
-          if (!isIdle) {
-            stopTimer();
-          }
           break;
       }
     };
 
-    document.addEventListener("keydown", handleKeyPress);
-    return () => document.removeEventListener("keydown", handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, [
     isIdle,
     isRunning,
     isPaused,
-    startTimer,
-    pauseTimer,
-    resumeTimer,
-    resetTimer,
+    handleStart,
+    handlePause,
+    handleResume,
+    handleReset,
     skipSession,
-    stopTimer,
   ]);
 
-  // Reset document title on unmount
-  useEffect(() => {
-    return () => {
-      if (typeof document !== "undefined") {
-        document.title = "Pomotune";
-      }
-    };
-  }, []);
-
   return (
-    <main className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
-      <header className="border-b border-gray-800">
-        <div className="container mx-auto px-4 py-4">
+      <header className="border-b border-gray-800 py-4">
+        <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">Pomotune</h1>
-
-            {/* Session Stats */}
-            <div className="flex items-center space-x-6 text-sm text-gray-400">
-              <div>
-                <span className="text-gray-500">Sessions:</span>{" "}
-                {sessionsCompleted}
+            {!isAudioSupported && (
+              <div className="text-xs text-amber-400">
+                Audio notifications not supported
               </div>
-              <div>
-                <span className="text-gray-500">Cycle:</span> {cycleProgress}
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Main Timer Area */}
-      <div className="container mx-auto px-4 py-8">
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Break notification */}
-          {isBreak && (
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center px-6 py-3 bg-green-500/10 border border-green-500/20 rounded-full">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-3" />
-                <span className="text-green-400 font-medium">
-                  Session completed! Time for a{" "}
-                  {sessionType === "longBreak" ? "long" : "short"} break.
-                </span>
-              </div>
+          {/* Task Input Section */}
+          <div className="mb-8 text-center">
+            <div className="max-w-md mx-auto">
+              <label
+                htmlFor="task-input"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
+                What are you working on? (optional)
+              </label>
+              <input
+                id="task-input"
+                type="text"
+                value={currentTask}
+                onChange={(e) => setCurrentTask(e.target.value)}
+                placeholder="Enter your task..."
+                disabled={isRunning}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                maxLength={100}
+              />
+              {currentTask && (
+                <div className="mt-1 text-xs text-gray-500">
+                  {currentTask.length}/100 characters
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Timer Display */}
-          <div className="flex justify-center mb-8">
+          <div className="mb-8">
             <TimerDisplay
-              time={formatTime}
-              sessionType={sessionType}
+              time={formattedTime}
+              sessionType={timerData.sessionType}
               sessionLabel={sessionLabel}
               cycleProgress={cycleProgress}
               progress={progress}
               isRunning={isRunning}
-              currentTask={currentTask}
+              currentTask={timerData.currentTask}
             />
           </div>
 
           {/* Timer Controls */}
-          <div className="flex justify-center">
+          <div className="mb-8">
             <TimerControls
               isRunning={isRunning}
               isPaused={isPaused}
               isIdle={isIdle}
-              onStart={() => startTimer()}
-              onPause={pauseTimer}
-              onResume={resumeTimer}
+              onStart={handleStart}
+              onPause={handlePause}
+              onResume={handleResume}
               onStop={stopTimer}
-              onReset={resetTimer}
+              onReset={handleReset}
               onSkip={skipSession}
             />
           </div>
-        </div>
-      </div>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-800 mt-16">
-        <div className="container mx-auto px-4 py-6">
-          <div className="text-center text-gray-500 text-sm">
-            <p>Focus better with the Pomodoro Technique</p>
-            <p className="mt-1">
-              Press Space to start/pause • R to reset • S to skip
-            </p>
+          {/* Session Info */}
+          <div className="text-center text-sm text-gray-400 space-y-2">
+            <div className="flex items-center justify-center space-x-6">
+              <div>
+                <span className="font-medium">Sessions: </span>
+                <span>{timerData.sessionsCompleted}</span>
+              </div>
+              <div>
+                <span className="font-medium">Cycle: </span>
+                <span>{cycleProgress}</span>
+              </div>
+            </div>
+
+            {timerData.sessionType === "focus" && (
+              <div className="text-xs text-gray-500">
+                {timerData.currentCycle + 1 === settings.sessionsUntilLongBreak
+                  ? "Long break coming up after this session!"
+                  : `${
+                      settings.sessionsUntilLongBreak -
+                      (timerData.currentCycle + 1)
+                    } sessions until long break`}
+              </div>
+            )}
           </div>
         </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-800 py-4 mt-auto">
+        <div className="container mx-auto px-4 text-center text-xs text-gray-500">
+          <p>
+            Built with focus in mind. Use{" "}
+            <kbd className="px-1 py-0.5 bg-gray-800 rounded">Space</kbd> to
+            play/pause,
+            <kbd className="px-1 py-0.5 bg-gray-800 rounded ml-1">R</kbd> to
+            reset,
+            <kbd className="px-1 py-0.5 bg-gray-800 rounded ml-1">S</kbd> to
+            skip
+          </p>
+        </div>
       </footer>
-    </main>
+    </div>
   );
 }
