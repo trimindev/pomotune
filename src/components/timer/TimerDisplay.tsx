@@ -10,7 +10,6 @@ interface TimerDisplayProps {
   cycleProgress: string; // e.g., "1/4", "2/4"
   progress: number; // Progress percentage (0-100)
   isRunning: boolean;
-  currentTask?: string | null;
 }
 
 export const TimerDisplay: React.FC<TimerDisplayProps> = ({
@@ -20,7 +19,6 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
   cycleProgress,
   progress,
   isRunning,
-  currentTask,
 }) => {
   // Get colors based on session type
   const getSessionColors = () => {
@@ -65,16 +63,6 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
         </div>
         <div className="text-gray-400 font-medium">Cycle {cycleProgress}</div>
       </div>
-
-      {/* Current Task Display */}
-      {currentTask && (
-        <div className="text-center max-w-md">
-          <p className="text-sm text-gray-500 mb-1">Working on</p>
-          <p className="text-lg text-gray-200 font-medium truncate">
-            {currentTask}
-          </p>
-        </div>
-      )}
 
       {/* Main Timer Display */}
       <div className="relative">
