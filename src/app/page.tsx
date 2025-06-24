@@ -22,7 +22,6 @@ import {
   saveCurrentTask,
   loadCurrentTask,
   clearCurrentTask,
-  getRecentTaskNames,
 } from "@/lib/storage";
 import Image from "next/image";
 
@@ -485,16 +484,6 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Quick Task Suggestions */}
-            {isIdle && showTaskInput && (
-              <div className="mb-8">
-                <QuickTaskSuggestions
-                  onSelectTask={setCurrentTask}
-                  currentTask={currentTask}
-                />
-              </div>
-            )}
-
             {/* Controls Toggle Buttons */}
             <div className="mb-6 flex justify-center gap-4">
               <button
@@ -709,45 +698,6 @@ const BackgroundControls: React.FC<BackgroundControlsProps> = ({
             ))}
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
-
-// Quick Task Suggestions Component
-interface QuickTaskSuggestionsProps {
-  onSelectTask: (task: string) => void;
-  currentTask: string;
-}
-
-const QuickTaskSuggestions: React.FC<QuickTaskSuggestionsProps> = ({
-  onSelectTask,
-  currentTask,
-}) => {
-  const [recentTasks, setRecentTasks] = useState<string[]>([]);
-
-  useEffect(() => {
-    const recent = getRecentTaskNames(5);
-    setRecentTasks(recent);
-  }, []);
-
-  if (recentTasks.length === 0 || currentTask) {
-    return null;
-  }
-
-  return (
-    <div className="text-center">
-      <p className="text-sm text-gray-300 mb-3">Recent tasks:</p>
-      <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
-        {recentTasks.map((task, index) => (
-          <button
-            key={index}
-            onClick={() => onSelectTask(task)}
-            className="px-3 py-1 text-sm bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white rounded-full transition-colors duration-200 border border-white/20 hover:border-white/40"
-          >
-            {task}
-          </button>
-        ))}
       </div>
     </div>
   );
